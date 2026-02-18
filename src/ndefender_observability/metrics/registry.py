@@ -59,6 +59,54 @@ AGGREGATOR_UP = Gauge(
     registry=REGISTRY,
 )
 
+UPS_PACK_VOLTAGE_V = Gauge(
+    "ndefender_ups_pack_voltage_v",
+    "UPS pack voltage",
+    registry=REGISTRY,
+)
+UPS_CURRENT_A = Gauge(
+    "ndefender_ups_current_a",
+    "UPS current",
+    registry=REGISTRY,
+)
+UPS_INPUT_VBUS_V = Gauge(
+    "ndefender_ups_input_vbus_v",
+    "UPS input VBUS voltage",
+    registry=REGISTRY,
+)
+UPS_INPUT_POWER_W = Gauge(
+    "ndefender_ups_input_power_w",
+    "UPS input power",
+    registry=REGISTRY,
+)
+UPS_SOC_PERCENT = Gauge(
+    "ndefender_ups_soc_percent",
+    "UPS state of charge percent",
+    registry=REGISTRY,
+)
+UPS_TIME_TO_EMPTY_S = Gauge(
+    "ndefender_ups_time_to_empty_s",
+    "UPS time to empty seconds",
+    registry=REGISTRY,
+)
+UPS_TIME_TO_FULL_S = Gauge(
+    "ndefender_ups_time_to_full_s",
+    "UPS time to full seconds",
+    registry=REGISTRY,
+)
+UPS_CELL_VOLTAGE_V = Gauge(
+    "ndefender_ups_cell_voltage_v",
+    "UPS per-cell voltage",
+    ["cell"],
+    registry=REGISTRY,
+)
+UPS_STATE = Gauge(
+    "ndefender_ups_state",
+    "UPS state enum",
+    ["state"],
+    registry=REGISTRY,
+)
+
 PI_CPU_TEMP_C = Gauge(
     "ndefender_pi_cpu_temp_c",
     "Raspberry Pi CPU temperature in C",

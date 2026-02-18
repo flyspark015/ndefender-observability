@@ -8,6 +8,7 @@ Completed ✅
 - Step 3 — State Store + Health Model
 - Step 4 — Raspberry Pi Stats Collector
 - Step 5 — Backend Aggregator Collector
+- Step 6 — System Controller + UPS Collector
 
 In Progress ⏳
 - None

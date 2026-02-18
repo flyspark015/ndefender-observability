@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse, Response
 
 from .collectors.aggregator_http import AggregatorHttpCollector
 from .collectors.pi_stats import PiStatsCollector
+from .collectors.system_controller_http import SystemControllerHttpCollector
 from .config import AppConfig, load_config
 from .health.compute import compute_deep_health, compute_status_snapshot
 from .metrics.registry import init_metrics, render_metrics, update_subsystem_metrics
@@ -29,8 +30,16 @@ async def lifespan(app: FastAPI):
     )
     app.state.aggregator_collector = agg_collector
     app.state.tasks.append(asyncio.create_task(agg_collector.run(app.state.store)))
+
+    system_collector = SystemControllerHttpCollector(
+        app.state.config.system_controller.base_url,
+        interval_s=app.state.config.polling.system_controller_s,
+    )
+    app.state.system_controller_collector = system_collector
+    app.state.tasks.append(asyncio.create_task(system_collector.run(app.state.store)))
     yield
     agg_collector.stop()
+    system_collector.stop()
     for task in app.state.tasks:
         task.cancel()
     await asyncio.gather(*app.state.tasks, return_exceptions=True)
