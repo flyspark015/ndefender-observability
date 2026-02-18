@@ -10,15 +10,11 @@ Completed ✅
 - Step 5 — Backend Aggregator Collector
 - Step 6 — System Controller + UPS Collector
 - Step 7 — JSONL Tail Collectors
+- Step 8 — Dashboards + Alerts Pack
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step 4 — Raspberry Pi Stats Collector
-- Step 5 — Backend Aggregator Collector
-- Step 6 — System Controller + UPS Collector
-- Step 7 — JSONL Tail Collectors
-- Step 8 — Dashboards + Alerts Pack
 - Step 9 — Ops Tools + Hardening
 - Step 10 — GREEN Release Lock

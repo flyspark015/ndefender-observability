@@ -1,2 +1,66 @@
-# Placeholder alert rules 🧯
-groups: []
+# N-Defender Observability Alerts 🧯
+
+groups:
+  - name: ndefender-observability
+    rules:
+      - alert: NdefenderSubsystemDown
+        expr: ndefender_subsystem_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Subsystem down"
+          description: "Subsystem {{ $labels.subsystem }} is not reporting."
+
+      - alert: NdefenderSubsystemStale
+        expr: ndefender_subsystem_last_update_age_seconds > 30
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Subsystem stale"
+          description: "Subsystem {{ $labels.subsystem }} has stale updates (>30s)."
+
+      - alert: NdefenderJsonlLagHigh
+        expr: ndefender_jsonl_tail_lag_seconds > 15
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JSONL tail lag high"
+          description: "Subsystem {{ $labels.subsystem }} JSONL tail lag > 15s."
+
+      - alert: NdefenderPiCpuHot
+        expr: ndefender_pi_cpu_temp_c > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU temperature high"
+          description: "CPU temperature > 80C for 5m."
+
+      - alert: NdefenderDiskLow
+        expr: ndefender_pi_disk_free_bytes{mount="/"} < 1073741824
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk free low"
+          description: "Disk free below 1GB for 10m."
+
+      - alert: NdefenderUpsLow
+        expr: ndefender_ups_soc_percent < 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "UPS state of charge low"
+          description: "UPS SOC below 20% for 5m."
+
+      - alert: NdefenderPollErrors
+        expr: increase(ndefender_observability_poll_errors_total[5m]) > 5
+        labels:
+          severity: warning
+        annotations:
+          summary: "Poll errors rising"
+          description: "Poll errors > 5 over 5m for {{ $labels.subsystem }}."
