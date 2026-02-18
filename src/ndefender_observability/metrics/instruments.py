@@ -1,1 +1,1 @@
-"""Metric instrument definitions (unused placeholder)."""
+"""Metric instrument definitions (reserved for future use)."""

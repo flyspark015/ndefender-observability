@@ -1,1 +1,1 @@
-"""Websocket server placeholder."""
+"""Websocket server reserved for future use."""

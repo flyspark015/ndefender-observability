@@ -12,9 +12,10 @@ Completed ✅
 - Step 7 — JSONL Tail Collectors
 - Step 8 — Dashboards + Alerts Pack
 - Step 9 — Ops Tools + Hardening
+- Step 10 — GREEN Release Lock
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step 10 — GREEN Release Lock
+- None
