@@ -54,12 +54,14 @@ class JsonlTailCollector:
         event_types: list[str],
         interval_s: int = 2,
         stale_after_s: int = 10,
+        bootstrap_bytes: int = 65536,
     ) -> None:
         self.subsystem = subsystem
         self.path = Path(path)
         self.event_types = event_types
         self.interval_s = interval_s
         self.stale_after_s = stale_after_s
+        self.bootstrap_bytes = bootstrap_bytes
         self._cursor = _FileCursor()
         self._rates = _RateTracker(window_s=60)
         self._stop = asyncio.Event()
@@ -106,7 +108,8 @@ class JsonlTailCollector:
         JSONL_FILE_SIZE_BYTES.labels(subsystem=self.subsystem).set(stat.st_size)
 
         inode = getattr(stat, "st_ino", None)
-        if self._cursor.inode is None or self._cursor.inode != inode:
+        bootstrap = self._cursor.inode is None or self._cursor.inode != inode
+        if bootstrap:
             self._cursor = _FileCursor(inode=inode, offset=0)
         if stat.st_size < self._cursor.offset:
             self._cursor.offset = 0
@@ -115,25 +118,51 @@ class JsonlTailCollector:
         last_event_type: str | None = None
 
         with self.path.open("rb") as handle:
-            handle.seek(self._cursor.offset)
-            for line in handle:
-                decoded = line.decode("utf-8", errors="ignore").strip()
-                if not decoded:
-                    continue
-                payload = _parse_json(decoded)
-                if payload is None:
-                    continue
-                event_type = _extract_event_type(payload)
-                if event_type:
-                    EVENTS_TOTAL.labels(subsystem=self.subsystem, type=event_type).inc()
-                    self._rates.add(event_type, now / 1000)
-                    last_event_type = event_type
-                ts_ms = _extract_timestamp_ms(payload)
-                if ts_ms is not None:
-                    last_event_ts_ms = ts_ms
-                elif event_type:
-                    last_event_ts_ms = now
-            self._cursor.offset = handle.tell()
+            if bootstrap:
+                tail_start = max(0, stat.st_size - self.bootstrap_bytes)
+                handle.seek(tail_start)
+                data = handle.read()
+                lines = data.splitlines()
+                if tail_start > 0 and lines:
+                    lines = lines[1:]
+                for raw in lines:
+                    decoded = raw.decode("utf-8", errors="ignore").strip()
+                    if not decoded:
+                        continue
+                    payload = _parse_json(decoded)
+                    if payload is None:
+                        continue
+                    event_type = _extract_event_type(payload)
+                    if event_type:
+                        EVENTS_TOTAL.labels(subsystem=self.subsystem, type=event_type).inc()
+                        self._rates.add(event_type, now / 1000)
+                        last_event_type = event_type
+                    ts_ms = _extract_timestamp_ms(payload)
+                    if ts_ms is not None:
+                        last_event_ts_ms = ts_ms
+                    elif event_type:
+                        last_event_ts_ms = now
+                self._cursor.offset = stat.st_size
+            else:
+                handle.seek(self._cursor.offset)
+                for line in handle:
+                    decoded = line.decode("utf-8", errors="ignore").strip()
+                    if not decoded:
+                        continue
+                    payload = _parse_json(decoded)
+                    if payload is None:
+                        continue
+                    event_type = _extract_event_type(payload)
+                    if event_type:
+                        EVENTS_TOTAL.labels(subsystem=self.subsystem, type=event_type).inc()
+                        self._rates.add(event_type, now / 1000)
+                        last_event_type = event_type
+                    ts_ms = _extract_timestamp_ms(payload)
+                    if ts_ms is not None:
+                        last_event_ts_ms = ts_ms
+                    elif event_type:
+                        last_event_ts_ms = now
+                self._cursor.offset = handle.tell()
 
         if last_event_ts_ms is not None:
             self._last_event_ts_ms = last_event_ts_ms

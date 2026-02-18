@@ -19,3 +19,18 @@ In Progress ⏳
 
 Pending ❌
 - None
+
+## Deployment Progress 🚀
+
+Legend: ✅ completed | ⏳ in progress | ❌ pending
+
+Completed ✅
+- Step A — systemd Unit + Runtime Verification
+
+In Progress ⏳
+- None
+
+Pending ❌
+- Step B — Live Integration Sanity
+- Step C — Prometheus + Grafana Quickstart
+- Step D — GitHub Release Object

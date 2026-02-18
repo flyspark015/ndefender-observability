@@ -1,0 +1,22 @@
+[Unit]
+Description=N-Defender Observability Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=toybook
+Group=toybook
+WorkingDirectory=/home/toybook/ndefender-observability
+EnvironmentFile=-/etc/default/ndefender-observability
+Environment=PYTHONUNBUFFERED=1
+Environment=NDEFENDER_OBS_CONFIG=/home/toybook/ndefender-observability/config/default.yaml
+ExecStart=/home/toybook/ndefender-observability/.venv/bin/uvicorn ndefender_observability.main:app --host 0.0.0.0 --port 9109
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=20
+TimeoutStopSec=20
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
