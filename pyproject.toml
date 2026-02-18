@@ -1,0 +1,36 @@
+[project]
+name = "ndefender-observability"
+version = "0.1.0-dev"
+description = "Production observability layer for N-Defender"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+  { name = "N-Defender Team" }
+]
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn>=0.27",
+  "prometheus-client>=0.20",
+  "httpx>=0.26",
+  "pydantic>=2.6",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/flyspark015/ndefender-observability"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]

@@ -1,0 +1,1 @@
+"""Health model definitions (placeholder)."""
