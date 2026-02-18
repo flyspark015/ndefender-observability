@@ -107,6 +107,31 @@ UPS_STATE = Gauge(
     registry=REGISTRY,
 )
 
+EVENTS_TOTAL = Counter(
+    "ndefender_events_total",
+    "Subsystem events total",
+    ["subsystem", "type"],
+    registry=REGISTRY,
+)
+EVENTS_RATE_60S = Gauge(
+    "ndefender_events_rate_60s",
+    "Subsystem events rate over 60s",
+    ["subsystem", "type"],
+    registry=REGISTRY,
+)
+JSONL_TAIL_LAG_SECONDS = Gauge(
+    "ndefender_jsonl_tail_lag_seconds",
+    "JSONL tail lag seconds",
+    ["subsystem"],
+    registry=REGISTRY,
+)
+JSONL_FILE_SIZE_BYTES = Gauge(
+    "ndefender_jsonl_file_size_bytes",
+    "JSONL file size bytes",
+    ["subsystem"],
+    registry=REGISTRY,
+)
+
 PI_CPU_TEMP_C = Gauge(
     "ndefender_pi_cpu_temp_c",
     "Raspberry Pi CPU temperature in C",

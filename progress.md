@@ -9,6 +9,7 @@ Completed ✅
 - Step 4 — Raspberry Pi Stats Collector
 - Step 5 — Backend Aggregator Collector
 - Step 6 — System Controller + UPS Collector
+- Step 7 — JSONL Tail Collectors
 
 In Progress ⏳
 - None

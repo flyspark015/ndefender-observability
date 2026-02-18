@@ -1,12 +1,14 @@
 """FastAPI entrypoint for observability service."""
 
 import asyncio
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, Response
 
 from .collectors.aggregator_http import AggregatorHttpCollector
+from .collectors.jsonl_tail import JsonlTailCollector
 from .collectors.pi_stats import PiStatsCollector
 from .collectors.system_controller_http import SystemControllerHttpCollector
 from .config import AppConfig, load_config
@@ -24,22 +26,56 @@ async def lifespan(app: FastAPI):
     app.state.pi_collector = PiStatsCollector()
     app.state.tasks = []
 
-    agg_collector = AggregatorHttpCollector(
-        app.state.config.backend_aggregator.base_url,
-        interval_s=app.state.config.polling.aggregator_s,
-    )
-    app.state.aggregator_collector = agg_collector
-    app.state.tasks.append(asyncio.create_task(agg_collector.run(app.state.store)))
+    disable_collectors = os.getenv("NDEFENDER_OBS_DISABLE_COLLECTORS") == "1"
+    if "PYTEST_CURRENT_TEST" in os.environ:
+        disable_collectors = True
 
-    system_collector = SystemControllerHttpCollector(
-        app.state.config.system_controller.base_url,
-        interval_s=app.state.config.polling.system_controller_s,
-    )
-    app.state.system_controller_collector = system_collector
-    app.state.tasks.append(asyncio.create_task(system_collector.run(app.state.store)))
+    if not disable_collectors:
+        agg_collector = AggregatorHttpCollector(
+            app.state.config.backend_aggregator.base_url,
+            interval_s=app.state.config.polling.aggregator_s,
+        )
+        app.state.aggregator_collector = agg_collector
+        app.state.tasks.append(asyncio.create_task(agg_collector.run(app.state.store)))
+
+        system_collector = SystemControllerHttpCollector(
+            app.state.config.system_controller.base_url,
+            interval_s=app.state.config.polling.system_controller_s,
+        )
+        app.state.system_controller_collector = system_collector
+        app.state.tasks.append(asyncio.create_task(system_collector.run(app.state.store)))
+
+        antsdr_collector = JsonlTailCollector(
+            subsystem="antsdr",
+            path=app.state.config.jsonl.antsdr_path,
+            event_types=["RF_CONTACT_NEW", "RF_CONTACT_UPDATE", "RF_CONTACT_LOST"],
+            interval_s=app.state.config.polling.antsdr_jsonl_s,
+            stale_after_s=app.state.config.thresholds.stale_after_s.antsdr,
+        )
+        app.state.antsdr_collector = antsdr_collector
+        app.state.tasks.append(asyncio.create_task(antsdr_collector.run(app.state.store)))
+
+        remoteid_collector = JsonlTailCollector(
+            subsystem="remoteid",
+            path=app.state.config.jsonl.remoteid_path,
+            event_types=[
+                "CONTACT_NEW",
+                "CONTACT_UPDATE",
+                "CONTACT_LOST",
+                "TELEMETRY_UPDATE",
+                "REPLAY_STATE",
+            ],
+            interval_s=app.state.config.polling.remoteid_jsonl_s,
+            stale_after_s=app.state.config.thresholds.stale_after_s.remoteid,
+        )
+        app.state.remoteid_collector = remoteid_collector
+        app.state.tasks.append(asyncio.create_task(remoteid_collector.run(app.state.store)))
     yield
-    agg_collector.stop()
-    system_collector.stop()
+    if not disable_collectors:
+        agg_collector.stop()
+        system_collector.stop()
+        antsdr_collector.stop()
+        remoteid_collector.stop()
     for task in app.state.tasks:
         task.cancel()
     await asyncio.gather(*app.state.tasks, return_exceptions=True)
