@@ -4,7 +4,7 @@ from ndefender_observability.main import app
 
 
 def test_health_endpoint_ok() -> None:
-    client = TestClient(app)
-    resp = client.get("/api/v1/health")
-    assert resp.status_code == 200
-    assert resp.json() == {"status": "ok"}
+    with TestClient(app) as client:
+        resp = client.get("/api/v1/health")
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "ok"}

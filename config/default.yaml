@@ -1,3 +1,42 @@
 service:
   host: 0.0.0.0
   port: 9109
+
+auth:
+  enabled: false
+  api_key: null
+
+polling:
+  aggregator_s: 2
+  system_controller_s: 5
+  antsdr_jsonl_s: 2
+  remoteid_jsonl_s: 2
+  esp32_s: 2
+
+backend_aggregator:
+  base_url: http://127.0.0.1:8000
+
+system_controller:
+  base_url: http://127.0.0.1:9000
+
+jsonl:
+  antsdr_path: /opt/ndefender/logs/antsdr_scan.jsonl
+  remoteid_path: /opt/ndefender/logs/remoteid_engine.jsonl
+
+ws:
+  enabled: false
+  metrics_update_hz: 1
+
+thresholds:
+  stale_after_s:
+    aggregator: 5
+    system_controller: 10
+    antsdr: 10
+    remoteid: 10
+    esp32: 5
+  error_budget:
+    max_poll_errors_per_min: 5
+  alerts:
+    disk_free_min_bytes: 1073741824
+    cpu_temp_max_c: 80
+    ups_soc_min_percent: 20

@@ -3,7 +3,7 @@
 Legend: ✅ done | 🟡 in progress | ❌ blocked
 
 - Step 1 — Bootstrap + CI + Minimal Service: ✅
-- Step 2 — Config System + Versioning: ❌
+- Step 2 — Config System + Versioning: ✅
 - Step 3 — State Store + Health Model: ❌
 - Step 4 — Raspberry Pi Stats Collector: ❌
 - Step 5 — Backend Aggregator Collector: ❌
