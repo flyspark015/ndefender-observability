@@ -5,6 +5,14 @@ Core metrics live under the `ndefender_` namespace.
 ## Service
 - `ndefender_observability_up`
 - `ndefender_observability_build_info{version,git_sha}`
+- `ndefender_observability_poll_errors_total{subsystem,kind}`
+- `ndefender_observability_poll_latency_seconds_bucket{subsystem,endpoint}`
+
+## Subsystem Health
+- `ndefender_subsystem_up{subsystem}`
+- `ndefender_subsystem_last_update_age_seconds{subsystem}`
+- `ndefender_subsystem_state{subsystem,state}`
+- `ndefender_aggregator_up`
 
 ## Raspberry Pi Stats
 - `ndefender_pi_cpu_temp_c`
