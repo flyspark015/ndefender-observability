@@ -6,6 +6,7 @@ Completed ✅
 - Step 1 — Bootstrap + CI + Minimal Service
 - Step 2 — Config System + Versioning
 - Step 3 — State Store + Health Model
+- Step 4 — Raspberry Pi Stats Collector
 
 In Progress ⏳
 - None

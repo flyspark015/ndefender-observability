@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse, Response
 
+from .collectors.pi_stats import PiStatsCollector
 from .config import AppConfig, load_config
 from .health.compute import compute_deep_health, compute_status_snapshot
 from .metrics.registry import init_metrics, render_metrics
@@ -17,6 +18,7 @@ async def lifespan(app: FastAPI):
     init_metrics(VERSION, GIT_SHA)
     app.state.config = load_config()
     app.state.store = ObservabilityState()
+    app.state.pi_collector = PiStatsCollector()
     yield
 
 
@@ -56,5 +58,10 @@ def config() -> JSONResponse:
 
 @app.get("/metrics")
 def metrics() -> Response:
+    collector: PiStatsCollector = app.state.pi_collector
+    try:
+        collector.collect()
+    except Exception:
+        pass
     data = render_metrics()
     return Response(content=data, media_type="text/plain; version=0.0.4")
