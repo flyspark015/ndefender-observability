@@ -6,6 +6,11 @@ auth:
   enabled: false
   api_key: null
 
+rate_limit:
+  enabled: false
+  max_requests: 60
+  window_s: 60
+
 polling:
   aggregator_s: 2
   system_controller_s: 5

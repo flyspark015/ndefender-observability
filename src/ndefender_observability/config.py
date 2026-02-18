@@ -21,6 +21,12 @@ class AuthConfig(BaseModel):
     api_key: str | None = None
 
 
+class RateLimitConfig(BaseModel):
+    enabled: bool = False
+    max_requests: int = 60
+    window_s: int = 60
+
+
 class PollingConfig(BaseModel):
     aggregator_s: int = 2
     system_controller_s: int = 5
@@ -74,6 +80,7 @@ class ThresholdsConfig(BaseModel):
 class AppConfig(BaseModel):
     service: ServiceConfig = Field(default_factory=ServiceConfig)
     auth: AuthConfig = Field(default_factory=AuthConfig)
+    rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)
     polling: PollingConfig = Field(default_factory=PollingConfig)
     backend_aggregator: BackendAggregatorConfig = Field(default_factory=BackendAggregatorConfig)
     system_controller: SystemControllerConfig = Field(default_factory=SystemControllerConfig)

@@ -11,10 +11,10 @@ Completed ✅
 - Step 6 — System Controller + UPS Collector
 - Step 7 — JSONL Tail Collectors
 - Step 8 — Dashboards + Alerts Pack
+- Step 9 — Ops Tools + Hardening
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step 9 — Ops Tools + Hardening
 - Step 10 — GREEN Release Lock

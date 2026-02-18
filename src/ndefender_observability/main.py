@@ -4,7 +4,7 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
 
 from .collectors.aggregator_http import AggregatorHttpCollector
@@ -15,6 +15,7 @@ from .config import AppConfig, load_config
 from .health.compute import compute_deep_health, compute_status_snapshot
 from .metrics.registry import init_metrics, render_metrics, update_subsystem_metrics
 from .state import ObservabilityState
+from .utils.http import RateLimiter, get_client_key
 from .version import GIT_SHA, VERSION
 
 
@@ -25,6 +26,10 @@ async def lifespan(app: FastAPI):
     app.state.store = ObservabilityState()
     app.state.pi_collector = PiStatsCollector()
     app.state.tasks = []
+    app.state.rate_limiter = RateLimiter(
+        app.state.config.rate_limit.max_requests,
+        app.state.config.rate_limit.window_s,
+    )
 
     disable_collectors = os.getenv("NDEFENDER_OBS_DISABLE_COLLECTORS") == "1"
     if "PYTEST_CURRENT_TEST" in os.environ:
@@ -84,13 +89,38 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="N-Defender Observability", version=VERSION, lifespan=lifespan)
 
 
+def _require_api_key(request: Request, config: AppConfig) -> None:
+    if not config.auth.enabled:
+        return
+    key = request.headers.get("x-api-key") or request.query_params.get("api_key")
+    if not key or key != config.auth.api_key:
+        raise HTTPException(status_code=401, detail="unauthorized")
+
+
+def _require_rate_limit(request: Request, config: AppConfig) -> None:
+    if not config.rate_limit.enabled:
+        return
+    limiter: RateLimiter = request.app.state.rate_limiter
+    key = get_client_key(request)
+    if not limiter.allow(key):
+        raise HTTPException(status_code=429, detail="rate limit exceeded")
+
+
+def _guarded(request: Request) -> None:
+    config: AppConfig = request.app.state.config
+    _require_api_key(request, config)
+    _require_rate_limit(request, config)
+
+
 @app.get("/api/v1/health")
-def health() -> JSONResponse:
+def health(request: Request) -> JSONResponse:
+    _guarded(request)
     return JSONResponse({"status": "ok"})
 
 
 @app.get("/api/v1/health/detail")
-def health_detail() -> JSONResponse:
+def health_detail(request: Request) -> JSONResponse:
+    _guarded(request)
     store: ObservabilityState = app.state.store
     data = compute_deep_health(store)
     data["status"] = "ok"
@@ -98,25 +128,29 @@ def health_detail() -> JSONResponse:
 
 
 @app.get("/api/v1/status")
-def status() -> JSONResponse:
+def status(request: Request) -> JSONResponse:
+    _guarded(request)
     store: ObservabilityState = app.state.store
     data = compute_status_snapshot(store)
     return JSONResponse(data)
 
 
 @app.get("/api/v1/version")
-def version() -> JSONResponse:
+def version(request: Request) -> JSONResponse:
+    _guarded(request)
     return JSONResponse({"version": VERSION, "git_sha": GIT_SHA})
 
 
 @app.get("/api/v1/config")
-def config() -> JSONResponse:
+def config(request: Request) -> JSONResponse:
+    _guarded(request)
     cfg: AppConfig = app.state.config
     return JSONResponse(cfg.sanitized())
 
 
 @app.get("/metrics")
-def metrics() -> Response:
+def metrics(request: Request) -> Response:
+    _guarded(request)
     collector: PiStatsCollector = app.state.pi_collector
     try:
         collector.collect()
