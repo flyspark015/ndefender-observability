@@ -100,9 +100,15 @@ Commands run:
 - git ls-remote --tags origin | rg "v0.1.0-observability-green"
 - gh --version (not installed)
 - python3 tools/make_release_notes.py
+- python3 - <<'PY' ... (build /tmp/release_payload.json)
+- curl -sS -X POST https://api.github.com/repos/flyspark015/ndefender-observability/releases
+- curl -sS https://api.github.com/repos/flyspark015/ndefender-observability/releases/tags/v0.1.0-observability-green
 
 Proof snippet (tag):
 - v0.1.0-observability-green
 
 Release object:
-- GitHub CLI not installed; manual release steps in docs/RELEASING.md
+- Release created via GitHub API
+- Release API proof:
+- id 288122804
+- html_url https://github.com/flyspark015/ndefender-observability/releases/tag/v0.1.0-observability-green
