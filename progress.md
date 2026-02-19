@@ -118,12 +118,12 @@ Release object:
 Completed ✅
 - Step 1 — Roadmap + Docs Skeleton Update
 - Step 2 — Alert Rules Pack Upgrade
+- Step 3 — Runbooks for Every Alert
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step 3 — Runbooks for Every Alert
 - Step 4 — Diagnostics Bundle Tool + API Endpoint
 - Step 5 — Golden-Signal Metrics Expansion
 - Step 6 — CI Hardening
@@ -138,3 +138,13 @@ Commands run:
 Proof snippet:
 - SUCCESS: 12 rules found
 - rules yaml ok
+
+## Phase 2.1 Step 3 — Runbooks for Every Alert ✅
+
+Commands run:
+- python3 - <<'PY' ... verify runbooks cover all alert names
+
+Proof snippet:
+- alerts 12
+- missing []
+- runbooks ok
