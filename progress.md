@@ -26,13 +26,13 @@ Legend: ✅ completed | ⏳ in progress | ❌ pending
 
 Completed ✅
 - Step A — systemd Unit + Runtime Verification
+- Step B — Live Integration Sanity
+- Step C — Prometheus + Grafana Quickstart
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step B — Live Integration Sanity
-- Step C — Prometheus + Grafana Quickstart
 - Step D — GitHub Release Object
 
 ## Step B — Live Integration Sanity ✅
@@ -70,3 +70,23 @@ Sampler proof (/tmp/obs_stepB.txt):
 
 Offline truthfulness proof:
 - ndefender_subsystem_up{subsystem="aggregator"} 0.0
+
+## Step C — Prometheus + Grafana Quickstart ✅
+
+Commands run:
+- sudo apt-get update
+- sudo apt-get install -y prometheus
+- promtool check config /etc/prometheus/prometheus.yml
+- sudo systemctl restart prometheus
+- curl -sS http://127.0.0.1:9090/metrics > /tmp/prom_metrics.txt
+- python3 -m json.tool dashboards/grafana/ndefender-overview.json > /tmp/ndefender-dashboard.json
+
+Proof snippet (promtool):
+- SUCCESS: /etc/prometheus/prometheus.yml is valid prometheus config file syntax
+
+Proof snippet (Prometheus metrics):
+- # HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
+- # TYPE go_gc_duration_seconds summary
+
+Grafana:
+- Not installed via apt on this Pi; documented manual install options.
