@@ -121,12 +121,12 @@ Completed ✅
 - Step 3 — Runbooks for Every Alert
 - Step 4 — Diagnostics Bundle Tool + API Endpoint
 - Step 5 — Golden-Signal Metrics Expansion
+- Step 6 — CI Hardening
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step 6 — CI Hardening
 - Step 7 — GREEN Verification + Release Lock
 
 ## Phase 2.1 Step 2 — Alert Rules Pack Upgrade ✅
@@ -164,3 +164,18 @@ Commands run:
 
 Proof snippet:
 - .... [100%]
+
+## Phase 2.1 Step 6 — CI Hardening ✅
+
+Commands run:
+- .venv/bin/ruff check .
+- .venv/bin/pytest -q
+- promtool check rules alerts/prometheus/ndefender.rules.yml
+- python3 - <<'PY' ... yaml.safe_load config + rules
+- python3 -m json.tool dashboards/grafana/ndefender-overview.json >/dev/null
+
+Proof snippet:
+- All checks passed!
+- ................. [100%]
+- SUCCESS: 12 rules found
+- yaml_ok 3

@@ -12,6 +12,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install Prometheus tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y prometheus
       - name: Install
         run: |
           python -m pip install --upgrade pip
@@ -20,3 +24,19 @@ jobs:
         run: ruff check .
       - name: Tests
         run: pytest
+      - name: Validate Alert Rules
+        run: promtool check rules alerts/prometheus/ndefender.rules.yml
+      - name: Validate YAML
+        run: |
+          python - <<'PY'
+          import glob, sys, yaml
+          files = []
+          files += glob.glob("config/*.yaml")
+          files += glob.glob("alerts/prometheus/*.yml")
+          for path in files:
+              with open(path, "r", encoding="utf-8") as f:
+                  yaml.safe_load(f)
+          print("yaml_ok", len(files))
+          PY
+      - name: Validate Dashboards JSON
+        run: python -m json.tool dashboards/grafana/ndefender-overview.json >/dev/null
