@@ -119,12 +119,12 @@ Completed ✅
 - Step 1 — Roadmap + Docs Skeleton Update
 - Step 2 — Alert Rules Pack Upgrade
 - Step 3 — Runbooks for Every Alert
+- Step 4 — Diagnostics Bundle Tool + API Endpoint
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step 4 — Diagnostics Bundle Tool + API Endpoint
 - Step 5 — Golden-Signal Metrics Expansion
 - Step 6 — CI Hardening
 - Step 7 — GREEN Verification + Release Lock
@@ -148,3 +148,11 @@ Proof snippet:
 - alerts 12
 - missing []
 - runbooks ok
+
+## Phase 2.1 Step 4 — Diagnostics Bundle Tool + API Endpoint ✅
+
+Commands run:
+- .venv/bin/pytest tests/test_diagnostics.py -q
+
+Proof snippet:
+- . [100%]

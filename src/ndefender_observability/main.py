@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
@@ -12,6 +13,7 @@ from .collectors.jsonl_tail import JsonlTailCollector
 from .collectors.pi_stats import PiStatsCollector
 from .collectors.system_controller_http import SystemControllerHttpCollector
 from .config import AppConfig, load_config
+from .diagnostics import DiagnosticsOptions, create_bundle
 from .health.compute import compute_deep_health, compute_status_snapshot
 from .metrics.registry import init_metrics, render_metrics, update_subsystem_metrics
 from .state import ObservabilityState
@@ -30,6 +32,7 @@ async def lifespan(app: FastAPI):
         app.state.config.rate_limit.max_requests,
         app.state.config.rate_limit.window_s,
     )
+    app.state.diag_last_ts_ms = 0
 
     disable_collectors = os.getenv("NDEFENDER_OBS_DISABLE_COLLECTORS") == "1"
     if "PYTEST_CURRENT_TEST" in os.environ:
@@ -112,6 +115,14 @@ def _guarded(request: Request) -> None:
     _require_rate_limit(request, config)
 
 
+def _require_local(request: Request) -> None:
+    client = request.client
+    host = client.host if client else ""
+    if host == "::1" or host.startswith("127."):
+        return
+    raise HTTPException(status_code=403, detail="local only")
+
+
 @app.get("/api/v1/health")
 def health(request: Request) -> JSONResponse:
     _guarded(request)
@@ -159,3 +170,26 @@ def metrics(request: Request) -> Response:
     update_subsystem_metrics(app.state.store)
     data = render_metrics()
     return Response(content=data, media_type="text/plain; version=0.0.4")
+
+
+@app.post("/api/v1/diag/bundle")
+def diag_bundle(request: Request) -> JSONResponse:
+    _guarded(request)
+    _require_local(request)
+    cooldown_ms = 60_000
+    now_ms = int(time.time() * 1000)
+    last_ts = request.app.state.diag_last_ts_ms or 0
+    if now_ms - last_ts < cooldown_ms:
+        raise HTTPException(status_code=429, detail="cooldown active")
+    request.app.state.diag_last_ts_ms = now_ms
+    config: AppConfig = request.app.state.config
+    base_url = f"http://127.0.0.1:{config.service.port}"
+    api_key = config.auth.api_key if config.auth.enabled else None
+    options = DiagnosticsOptions(base_url=base_url, api_key=api_key)
+    try:
+        result = create_bundle(options)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return JSONResponse(
+        {"path": result.path, "size_bytes": result.size_bytes, "created_ts": result.created_ts}
+    )
