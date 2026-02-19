@@ -8,6 +8,7 @@ groups:
         for: 2m
         labels:
           severity: critical
+          component: subsystem
         annotations:
           summary: "Subsystem down"
           description: "Subsystem {{ $labels.subsystem }} is not reporting."
@@ -17,50 +18,107 @@ groups:
         for: 2m
         labels:
           severity: warning
+          component: subsystem
         annotations:
           summary: "Subsystem stale"
           description: "Subsystem {{ $labels.subsystem }} has stale updates (>30s)."
 
       - alert: NdefenderJsonlLagHigh
-        expr: ndefender_jsonl_tail_lag_seconds > 15
-        for: 2m
+        expr: ndefender_jsonl_tail_lag_seconds{subsystem=~"antsdr|remoteid"} > 30
+        for: 3m
         labels:
           severity: warning
+          component: jsonl
         annotations:
           summary: "JSONL tail lag high"
-          description: "Subsystem {{ $labels.subsystem }} JSONL tail lag > 15s."
-
-      - alert: NdefenderPiCpuHot
-        expr: ndefender_pi_cpu_temp_c > 80
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "CPU temperature high"
-          description: "CPU temperature > 80C for 5m."
+          description: "Subsystem {{ $labels.subsystem }} JSONL tail lag > 30s."
 
       - alert: NdefenderDiskLow
         expr: ndefender_pi_disk_free_bytes{mount="/"} < 1073741824
         for: 10m
         labels:
           severity: warning
+          component: storage
         annotations:
           summary: "Disk free low"
           description: "Disk free below 1GB for 10m."
+
+      - alert: NdefenderCpuThrottling
+        expr: ndefender_pi_throttled_flags{flag=~"under_voltage|freq_capped|throttled|soft_temp_limit"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          component: pi
+        annotations:
+          summary: "CPU throttling detected"
+          description: "Throttle flag {{ $labels.flag }} active on Pi."
+
+      - alert: NdefenderPiCpuHot
+        expr: ndefender_pi_cpu_temp_c > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: pi
+        annotations:
+          summary: "CPU temperature high"
+          description: "CPU temperature > 80C for 5m."
+
+      - alert: NdefenderUpsCriticalLow
+        expr: ndefender_ups_soc_percent < 10
+        for: 2m
+        labels:
+          severity: critical
+          component: ups
+        annotations:
+          summary: "UPS SOC critically low"
+          description: "UPS SOC below 10% for 2m."
 
       - alert: NdefenderUpsLow
         expr: ndefender_ups_soc_percent < 20
         for: 5m
         labels:
           severity: warning
+          component: ups
         annotations:
           summary: "UPS state of charge low"
           description: "UPS SOC below 20% for 5m."
 
-      - alert: NdefenderPollErrors
-        expr: increase(ndefender_observability_poll_errors_total[5m]) > 5
+      - alert: NdefenderUpsTimeToEmptyLow
+        expr: ndefender_ups_time_to_empty_s > 0 and ndefender_ups_time_to_empty_s < 900
+        for: 2m
         labels:
           severity: warning
+          component: ups
+        annotations:
+          summary: "UPS time-to-empty low"
+          description: "UPS time-to-empty < 15 minutes."
+
+      - alert: NdefenderPollErrorsHigh
+        expr: increase(ndefender_observability_poll_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: collector
         annotations:
           summary: "Poll errors rising"
-          description: "Poll errors > 5 over 5m for {{ $labels.subsystem }}."
+          description: "Poll errors > 10 over 5m for {{ $labels.subsystem }}."
+
+      - alert: NdefenderPollLatencyHigh
+        expr: histogram_quantile(0.95, sum by (le, subsystem, endpoint) (rate(ndefender_observability_poll_latency_seconds_bucket[5m]))) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: collector
+        annotations:
+          summary: "Poll latency high"
+          description: "95th percentile poll latency > 1s for {{ $labels.subsystem }}."
+
+      - alert: NdefenderJsonlLogStalled
+        expr: ndefender_jsonl_tail_lag_seconds{subsystem=~"antsdr|remoteid"} > 120
+        for: 5m
+        labels:
+          severity: critical
+          component: jsonl
+        annotations:
+          summary: "JSONL log stalled"
+          description: "Subsystem {{ $labels.subsystem }} JSONL tail lag > 120s."
