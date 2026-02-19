@@ -1,19 +1,10 @@
 # Alerts Pack 🧯
 
-Prometheus alert rules are provided at:
-- `alerts/prometheus/ndefender.rules.yml`
+Phase 2.1 will expand alert coverage and add runbooks. No external notifications are used.
 
-## Summary
-- Subsystem down and stale detection
-- JSONL tail lag warnings
-- CPU temperature high
-- Disk free low
-- UPS SOC low
-- Poll error surge
+## Alert Sources
+- Prometheus rules: `alerts/prometheus/ndefender.rules.yml`
 
-## Recommended Thresholds
-- Subsystem stale: 30s
-- JSONL lag: 15s
-- CPU temp: 80C
-- Disk free: 1GB
-- UPS SOC: 20%
+## How to View Alerts
+- Prometheus UI: `http://<pi-ip>:9090/alerts`
+- Prometheus API: `/api/v1/alerts`

@@ -112,3 +112,19 @@ Release object:
 - Release API proof:
 - id 288122804
 - html_url https://github.com/flyspark015/ndefender-observability/releases/tag/v0.1.0-observability-green
+
+# Phase 2.1 Progress 🚀
+
+Completed ✅
+- Step 1 — Roadmap + Docs Skeleton Update
+
+In Progress ⏳
+- None
+
+Pending ❌
+- Step 2 — Alert Rules Pack Upgrade
+- Step 3 — Runbooks for Every Alert
+- Step 4 — Diagnostics Bundle Tool + API Endpoint
+- Step 5 — Golden-Signal Metrics Expansion
+- Step 6 — CI Hardening
+- Step 7 — GREEN Verification + Release Lock

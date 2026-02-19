@@ -73,3 +73,18 @@
 - Tag `v0.1.0-observability-green`
 - Acceptance criteria
 - ROADMAP done, progress GREEN
+
+## Phase 2.1: Alerting + Runbooks + Diagnostics
+- Steps
+- Upgrade Prometheus alert rules (no external notifications)
+- Add runbooks for every alert
+- Add diagnostics bundle tool + API endpoint
+- Add golden-signal metrics improvements
+- Harden CI: promtool + YAML/JSON validation
+- Release lock: v0.2.0-observability-alerting-green
+- Acceptance criteria
+- Alerts validate with promtool
+- Runbooks cover every alert
+- Diagnostics bundle works and is safe
+- CI enforces lint/tests/rules
+- Release tagged + GitHub release object created

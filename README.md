@@ -9,6 +9,12 @@ Production observability layer for N-Defender deployments on Raspberry Pi 5. �
 - Alert rules + Grafana dashboards 🧭
 - Optional API auth + rate limit 🔐
 
+## Phase 2.1 Goals
+- Production-grade alert rules (no outbound notifications)
+- Runbooks for every alert
+- Diagnostics bundle generator + API endpoint
+- Golden-signal metrics expansion
+
 ## Quickstart
 1. Create a virtual env and install deps.
 2. Run the API server.
@@ -30,6 +36,8 @@ Then visit:
 - `docs/HEALTH_MODEL.md`
 - `docs/DASHBOARDS.md`
 - `docs/ALERTS.md`
+- `docs/RUNBOOKS.md`
+- `docs/DIAGNOSTICS.md`
 - `docs/OPERATIONS.md`
 - `docs/CONFIGURATION.md`
 
