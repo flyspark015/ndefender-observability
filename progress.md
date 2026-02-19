@@ -28,12 +28,13 @@ Completed ✅
 - Step A — systemd Unit + Runtime Verification
 - Step B — Live Integration Sanity
 - Step C — Prometheus + Grafana Quickstart
+- Step D — GitHub Release Object
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step D — GitHub Release Object
+- None
 
 ## Step B — Live Integration Sanity ✅
 
@@ -90,3 +91,18 @@ Proof snippet (Prometheus metrics):
 
 Grafana:
 - Not installed via apt on this Pi; documented manual install options.
+
+## Step D — Release Object ✅
+
+Commands run:
+- git fetch --tags
+- git tag -l | rg "v0.1.0-observability-green"
+- git ls-remote --tags origin | rg "v0.1.0-observability-green"
+- gh --version (not installed)
+- python3 tools/make_release_notes.py
+
+Proof snippet (tag):
+- v0.1.0-observability-green
+
+Release object:
+- GitHub CLI not installed; manual release steps in docs/RELEASING.md
