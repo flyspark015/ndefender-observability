@@ -122,12 +122,13 @@ Completed ✅
 - Step 4 — Diagnostics Bundle Tool + API Endpoint
 - Step 5 — Golden-Signal Metrics Expansion
 - Step 6 — CI Hardening
+- Step 7 — GREEN Verification + Release Lock
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step 7 — GREEN Verification + Release Lock
+- None
 
 ## Phase 2.1 Step 2 — Alert Rules Pack Upgrade ✅
 
@@ -179,3 +180,24 @@ Proof snippet:
 - ................. [100%]
 - SUCCESS: 12 rules found
 - yaml_ok 3
+
+## Phase 2.1 Step 7 — GREEN Verification + Release Lock ✅
+
+Commands run:
+- .venv/bin/ruff check .
+- .venv/bin/pytest -q
+- promtool check rules alerts/prometheus/ndefender.rules.yml
+- python3 - <<'PY' ... yaml.safe_load config + rules
+- python3 -m json.tool dashboards/grafana/ndefender-overview.json >/dev/null
+- git tag -a v0.2.0-observability-alerting-green -m "v0.2.0 observability alerting green"
+- git push origin v0.2.0-observability-alerting-green
+- GitHub Release API (v0.2.0-observability-alerting-green)
+
+Proof snippet:
+- All checks passed!
+- ................. [100%]
+- SUCCESS: 12 rules found
+- yaml_ok 3
+- tag pushed: v0.2.0-observability-alerting-green
+- release_id 288168027
+- html_url https://github.com/flyspark015/ndefender-observability/releases/tag/v0.2.0-observability-alerting-green
