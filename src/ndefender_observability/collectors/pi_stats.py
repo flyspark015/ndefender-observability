@@ -12,6 +12,7 @@ import psutil
 from ..metrics.registry import (
     PI_CPU_TEMP_C,
     PI_DISK_FREE_BYTES,
+    PI_DISK_USED_PERCENT,
     PI_LOAD1,
     PI_LOAD5,
     PI_LOAD15,
@@ -46,6 +47,7 @@ class PiStatsCollector:
 
         disk = psutil.disk_usage(self.mount)
         PI_DISK_FREE_BYTES.labels(mount=self.mount).set(disk.free)
+        PI_DISK_USED_PERCENT.labels(mount=self.mount).set(disk.percent)
 
         temp_c = _read_cpu_temp_c()
         if temp_c is not None:

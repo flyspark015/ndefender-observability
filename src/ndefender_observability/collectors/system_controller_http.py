@@ -10,6 +10,7 @@ import httpx
 
 from ..health.model import HealthState
 from ..metrics.registry import (
+    COLLECTOR_EXCEPTIONS_TOTAL,
     POLL_ERRORS_TOTAL,
     POLL_LATENCY_SECONDS,
     UPS_CELL_VOLTAGE_V,
@@ -50,10 +51,12 @@ class SystemControllerHttpCollector:
                     POLL_ERRORS_TOTAL.labels(
                         subsystem="system_controller", kind="loop_exception"
                     ).inc()
+                    COLLECTOR_EXCEPTIONS_TOTAL.labels(subsystem="system_controller").inc()
                     store.update(
                         "system_controller",
                         state=HealthState.OFFLINE,
                         last_error=str(exc),
+                        last_error_ts=now_ms(),
                         reasons=["poll loop error"],
                         updated_ts=now_ms(),
                         evidence={"base_url": self.base_url},
@@ -105,6 +108,7 @@ class SystemControllerHttpCollector:
             state=state,
             updated_ts=now,
             last_error=last_error,
+            last_error_ts=now if last_error else None,
             reasons=reasons or ["ok"],
             evidence=evidence,
         )

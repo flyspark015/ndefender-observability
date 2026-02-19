@@ -1,5 +1,7 @@
 """Prometheus registry and core instruments."""
 
+from __future__ import annotations
+
 from prometheus_client import CollectorRegistry, Counter, Gauge, Histogram, generate_latest
 
 from ..health.model import HealthState
@@ -52,10 +54,109 @@ SUBSYSTEM_STATE = Gauge(
     ["subsystem", "state"],
     registry=REGISTRY,
 )
+SUBSYSTEM_LAST_SUCCESS_TS = Gauge(
+    "ndefender_subsystem_last_success_ts",
+    "Subsystem last success unix timestamp",
+    ["subsystem"],
+    registry=REGISTRY,
+)
+SUBSYSTEM_LAST_ERROR_TS = Gauge(
+    "ndefender_subsystem_last_error_ts",
+    "Subsystem last error unix timestamp",
+    ["subsystem"],
+    registry=REGISTRY,
+)
+COLLECTOR_EXCEPTIONS_TOTAL = Counter(
+    "ndefender_collector_exceptions_total",
+    "Collector exceptions total",
+    ["subsystem"],
+    registry=REGISTRY,
+)
 
 AGGREGATOR_UP = Gauge(
     "ndefender_aggregator_up",
     "Backend aggregator up",
+    registry=REGISTRY,
+)
+
+EVENTS_TOTAL = Counter(
+    "ndefender_events_total",
+    "Subsystem events total",
+    ["subsystem", "type"],
+    registry=REGISTRY,
+)
+EVENTS_RATE_60S = Gauge(
+    "ndefender_events_rate_60s",
+    "Subsystem events rate over 60s",
+    ["subsystem", "type"],
+    registry=REGISTRY,
+)
+JSONL_TAIL_LAG_SECONDS = Gauge(
+    "ndefender_jsonl_tail_lag_seconds",
+    "JSONL tail lag seconds",
+    ["subsystem"],
+    registry=REGISTRY,
+)
+JSONL_FILE_SIZE_BYTES = Gauge(
+    "ndefender_jsonl_file_size_bytes",
+    "JSONL file size bytes",
+    ["subsystem"],
+    registry=REGISTRY,
+)
+JSONL_LAST_EVENT_TS = Gauge(
+    "ndefender_jsonl_last_event_ts",
+    "JSONL last event unix timestamp",
+    ["subsystem"],
+    registry=REGISTRY,
+)
+JSONL_BYTES_DELTA_5M = Gauge(
+    "ndefender_jsonl_file_bytes_delta_5m",
+    "JSONL file growth over 5 minutes (bytes)",
+    ["subsystem"],
+    registry=REGISTRY,
+)
+
+PI_CPU_TEMP_C = Gauge(
+    "ndefender_pi_cpu_temp_c",
+    "Raspberry Pi CPU temperature in C",
+    registry=REGISTRY,
+)
+PI_THROTTLED_FLAG = Gauge(
+    "ndefender_pi_throttled_flags",
+    "Raspberry Pi throttled flags",
+    ["flag"],
+    registry=REGISTRY,
+)
+PI_DISK_FREE_BYTES = Gauge(
+    "ndefender_pi_disk_free_bytes",
+    "Disk free bytes",
+    ["mount"],
+    registry=REGISTRY,
+)
+PI_DISK_USED_PERCENT = Gauge(
+    "ndefender_pi_disk_used_percent",
+    "Disk used percent",
+    ["mount"],
+    registry=REGISTRY,
+)
+PI_MEM_AVAILABLE_BYTES = Gauge(
+    "ndefender_pi_mem_available_bytes",
+    "Memory available bytes",
+    registry=REGISTRY,
+)
+PI_LOAD1 = Gauge(
+    "ndefender_pi_load1",
+    "System load average (1m)",
+    registry=REGISTRY,
+)
+PI_LOAD5 = Gauge(
+    "ndefender_pi_load5",
+    "System load average (5m)",
+    registry=REGISTRY,
+)
+PI_LOAD15 = Gauge(
+    "ndefender_pi_load15",
+    "System load average (15m)",
     registry=REGISTRY,
 )
 
@@ -107,69 +208,6 @@ UPS_STATE = Gauge(
     registry=REGISTRY,
 )
 
-EVENTS_TOTAL = Counter(
-    "ndefender_events_total",
-    "Subsystem events total",
-    ["subsystem", "type"],
-    registry=REGISTRY,
-)
-EVENTS_RATE_60S = Gauge(
-    "ndefender_events_rate_60s",
-    "Subsystem events rate over 60s",
-    ["subsystem", "type"],
-    registry=REGISTRY,
-)
-JSONL_TAIL_LAG_SECONDS = Gauge(
-    "ndefender_jsonl_tail_lag_seconds",
-    "JSONL tail lag seconds",
-    ["subsystem"],
-    registry=REGISTRY,
-)
-JSONL_FILE_SIZE_BYTES = Gauge(
-    "ndefender_jsonl_file_size_bytes",
-    "JSONL file size bytes",
-    ["subsystem"],
-    registry=REGISTRY,
-)
-
-PI_CPU_TEMP_C = Gauge(
-    "ndefender_pi_cpu_temp_c",
-    "Raspberry Pi CPU temperature in C",
-    registry=REGISTRY,
-)
-PI_THROTTLED_FLAG = Gauge(
-    "ndefender_pi_throttled_flags",
-    "Raspberry Pi throttled flags",
-    ["flag"],
-    registry=REGISTRY,
-)
-PI_DISK_FREE_BYTES = Gauge(
-    "ndefender_pi_disk_free_bytes",
-    "Disk free bytes",
-    ["mount"],
-    registry=REGISTRY,
-)
-PI_MEM_AVAILABLE_BYTES = Gauge(
-    "ndefender_pi_mem_available_bytes",
-    "Memory available bytes",
-    registry=REGISTRY,
-)
-PI_LOAD1 = Gauge(
-    "ndefender_pi_load1",
-    "System load average (1m)",
-    registry=REGISTRY,
-)
-PI_LOAD5 = Gauge(
-    "ndefender_pi_load5",
-    "System load average (5m)",
-    registry=REGISTRY,
-)
-PI_LOAD15 = Gauge(
-    "ndefender_pi_load15",
-    "System load average (15m)",
-    registry=REGISTRY,
-)
-
 
 def init_metrics(version: str, git_sha: str) -> None:
     OBSERVABILITY_UP.set(1)
@@ -190,6 +228,10 @@ def update_subsystem_metrics(store: ObservabilityState) -> None:
             )
         if item.subsystem == "aggregator":
             AGGREGATOR_UP.set(is_up)
+        if item.updated_ts is not None:
+            SUBSYSTEM_LAST_SUCCESS_TS.labels(subsystem=item.subsystem).set(item.updated_ts / 1000)
+        if item.last_error:
+            SUBSYSTEM_LAST_ERROR_TS.labels(subsystem=item.subsystem).set(now / 1000)
 
 
 def render_metrics() -> bytes:

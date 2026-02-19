@@ -14,6 +14,7 @@ class SubsystemState:
     state: HealthState = HealthState.OFFLINE
     updated_ts: int | None = None
     last_error: str | None = None
+    last_error_ts: int | None = None
     reasons: list[str] = field(default_factory=list)
     evidence: dict[str, Any] = field(default_factory=dict)
 
@@ -46,6 +47,7 @@ class ObservabilityState:
         state: HealthState | None = None,
         updated_ts: int | None = None,
         last_error: str | None = None,
+        last_error_ts: int | None = None,
         reasons: list[str] | None = None,
         evidence: dict[str, Any] | None = None,
     ) -> None:
@@ -56,6 +58,8 @@ class ObservabilityState:
             current.updated_ts = updated_ts
         if last_error is not None:
             current.last_error = last_error
+        if last_error_ts is not None:
+            current.last_error_ts = last_error_ts
         if reasons is not None:
             current.reasons = reasons
         if evidence is not None:

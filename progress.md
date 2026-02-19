@@ -120,12 +120,12 @@ Completed ✅
 - Step 2 — Alert Rules Pack Upgrade
 - Step 3 — Runbooks for Every Alert
 - Step 4 — Diagnostics Bundle Tool + API Endpoint
+- Step 5 — Golden-Signal Metrics Expansion
 
 In Progress ⏳
 - None
 
 Pending ❌
-- Step 5 — Golden-Signal Metrics Expansion
 - Step 6 — CI Hardening
 - Step 7 — GREEN Verification + Release Lock
 
@@ -156,3 +156,11 @@ Commands run:
 
 Proof snippet:
 - . [100%]
+
+## Phase 2.1 Step 5 — Golden-Signal Metrics Expansion ✅
+
+Commands run:
+- .venv/bin/pytest tests/test_metrics_exposition.py tests/test_health_model.py -q
+
+Proof snippet:
+- .... [100%]

@@ -9,7 +9,7 @@ from typing import Any
 import httpx
 
 from ..health.model import HealthState
-from ..metrics.registry import POLL_ERRORS_TOTAL, POLL_LATENCY_SECONDS
+from ..metrics.registry import COLLECTOR_EXCEPTIONS_TOTAL, POLL_ERRORS_TOTAL, POLL_LATENCY_SECONDS
 from ..state import ObservabilityState
 from ..utils.time import now_ms
 
@@ -28,10 +28,12 @@ class AggregatorHttpCollector:
                     await self._poll_once(store, client)
                 except Exception as exc:
                     POLL_ERRORS_TOTAL.labels(subsystem="aggregator", kind="loop_exception").inc()
+                    COLLECTOR_EXCEPTIONS_TOTAL.labels(subsystem="aggregator").inc()
                     store.update(
                         "aggregator",
                         state=HealthState.OFFLINE,
                         last_error=str(exc),
+                        last_error_ts=now_ms(),
                         reasons=["poll loop error"],
                         updated_ts=now_ms(),
                         evidence={"base_url": self.base_url},
@@ -77,6 +79,7 @@ class AggregatorHttpCollector:
             state=state,
             updated_ts=now,
             last_error=last_error,
+            last_error_ts=now if last_error else None,
             reasons=reasons or ["ok"],
             evidence=evidence,
         )

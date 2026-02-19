@@ -7,11 +7,14 @@ Core metrics live under the `ndefender_` namespace.
 - `ndefender_observability_build_info{version,git_sha}`
 - `ndefender_observability_poll_errors_total{subsystem,kind}`
 - `ndefender_observability_poll_latency_seconds_bucket{subsystem,endpoint}`
+- `ndefender_collector_exceptions_total{subsystem}`
 
 ## Subsystem Health
 - `ndefender_subsystem_up{subsystem}`
 - `ndefender_subsystem_last_update_age_seconds{subsystem}`
 - `ndefender_subsystem_state{subsystem,state}`
+- `ndefender_subsystem_last_success_ts{subsystem}`
+- `ndefender_subsystem_last_error_ts{subsystem}`
 - `ndefender_aggregator_up`
 
 ## JSONL Tails
@@ -19,11 +22,14 @@ Core metrics live under the `ndefender_` namespace.
 - `ndefender_events_rate_60s{subsystem,type}`
 - `ndefender_jsonl_tail_lag_seconds{subsystem}`
 - `ndefender_jsonl_file_size_bytes{subsystem}`
+- `ndefender_jsonl_last_event_ts{subsystem}`
+- `ndefender_jsonl_file_bytes_delta_5m{subsystem}`
 
 ## Raspberry Pi Stats
 - `ndefender_pi_cpu_temp_c`
 - `ndefender_pi_throttled_flags{flag}`
 - `ndefender_pi_disk_free_bytes{mount}`
+- `ndefender_pi_disk_used_percent{mount}`
 - `ndefender_pi_mem_available_bytes`
 - `ndefender_pi_load1`
 - `ndefender_pi_load5`

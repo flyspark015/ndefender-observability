@@ -25,6 +25,7 @@ def test_health_detail_schema() -> None:
                 "state",
                 "updated_ts",
                 "last_error",
+                "last_error_ts",
                 "last_response_ago_ms",
                 "reasons",
                 "evidence",

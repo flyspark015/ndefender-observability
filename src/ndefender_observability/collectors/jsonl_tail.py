@@ -13,7 +13,9 @@ from ..health.model import HealthState
 from ..metrics.registry import (
     EVENTS_RATE_60S,
     EVENTS_TOTAL,
+    JSONL_BYTES_DELTA_5M,
     JSONL_FILE_SIZE_BYTES,
+    JSONL_LAST_EVENT_TS,
     JSONL_TAIL_LAG_SECONDS,
 )
 from ..state import ObservabilityState
@@ -67,6 +69,7 @@ class JsonlTailCollector:
         self._stop = asyncio.Event()
         self._last_event_ts_ms: int | None = None
         self._last_event_type: str | None = None
+        self._size_samples: deque[tuple[int, int]] = deque(maxlen=64)
 
     async def run(self, store: ObservabilityState) -> None:
         while not self._stop.is_set():
@@ -77,6 +80,7 @@ class JsonlTailCollector:
                     self.subsystem,
                     state=HealthState.OFFLINE,
                     last_error=str(exc),
+                    last_error_ts=now_ms(),
                     reasons=["jsonl poll error"],
                     updated_ts=now_ms(),
                     evidence={"path": str(self.path)},
@@ -98,6 +102,7 @@ class JsonlTailCollector:
                 self.subsystem,
                 state=HealthState.OFFLINE,
                 last_error="file missing",
+                last_error_ts=now,
                 reasons=["jsonl file missing"],
                 updated_ts=None,
                 evidence={"path": str(self.path)},
@@ -106,6 +111,7 @@ class JsonlTailCollector:
 
         stat = self.path.stat()
         JSONL_FILE_SIZE_BYTES.labels(subsystem=self.subsystem).set(stat.st_size)
+        self._size_samples.append((now, stat.st_size))
 
         inode = getattr(stat, "st_ino", None)
         bootstrap = self._cursor.inode is None or self._cursor.inode != inode
@@ -177,10 +183,14 @@ class JsonlTailCollector:
         else:
             age_s = max(0.0, (now - last_event_ts_ms) / 1000)
             JSONL_TAIL_LAG_SECONDS.labels(subsystem=self.subsystem).set(age_s)
+            JSONL_LAST_EVENT_TS.labels(subsystem=self.subsystem).set(last_event_ts_ms / 1000)
 
         for event_type in self.event_types:
             rate = self._rates.rate(event_type, now / 1000)
             EVENTS_RATE_60S.labels(subsystem=self.subsystem, type=event_type).set(rate)
+
+        delta = _growth_over_window(self._size_samples, window_ms=300_000)
+        JSONL_BYTES_DELTA_5M.labels(subsystem=self.subsystem).set(delta)
 
         if last_event_ts_ms is None:
             state = HealthState.DEGRADED
@@ -200,6 +210,7 @@ class JsonlTailCollector:
             state=state,
             updated_ts=last_event_ts_ms,
             last_error=last_error,
+            last_error_ts=now if last_error else None,
             reasons=reasons,
             evidence={
                 "path": str(self.path),
@@ -243,3 +254,17 @@ def _extract_timestamp_ms(payload: dict[str, Any]) -> int | None:
             return int(number * 1000)
         return int(number)
     return None
+
+
+def _growth_over_window(samples: deque[tuple[int, int]], window_ms: int) -> float:
+    if len(samples) < 2:
+        return 0.0
+    newest_ts, newest_size = samples[-1]
+    oldest_ts, oldest_size = samples[0]
+    for ts, size in samples:
+        if newest_ts - ts <= window_ms:
+            oldest_ts, oldest_size = ts, size
+            break
+    if newest_ts == oldest_ts:
+        return 0.0
+    return float(max(0, newest_size - oldest_size))

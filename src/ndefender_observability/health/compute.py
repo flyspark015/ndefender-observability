@@ -33,6 +33,7 @@ def compute_deep_health(store: ObservabilityState) -> dict[str, Any]:
                 state=item.state,
                 updated_ts=item.updated_ts,
                 last_error=item.last_error,
+                last_error_ts=item.last_error_ts,
                 last_response_ago_ms=item.age_ms(now),
                 reasons=item.reasons,
                 evidence=item.evidence,
@@ -53,6 +54,7 @@ def compute_status_snapshot(store: ObservabilityState) -> dict[str, Any]:
                 "subsystem": item.subsystem,
                 "state": item.state,
                 "last_update_age_ms": item.age_ms(now),
+                "last_error_ts": item.last_error_ts,
             }
         )
 
