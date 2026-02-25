@@ -4,6 +4,28 @@ Runbooks for every Prometheus alert. All commands are Raspberry Pi compatible.
 
 ---
 
+## Aggregator Data Quality (GREEN SIGNAL)
+**What it means**: The UI relies on `/api/v1/status` to be data-complete and truthful.
+
+**Key expectations**:
+- No empty `{}` blocks for major sections.
+- Explicit `status` + `last_error` for degraded/offline subsystems.
+- WS heartbeat present to keep UI live.
+
+**Quick checks**:
+```bash
+curl -sS http://127.0.0.1:8001/api/v1/status | jq '.overall_ok,.rf,.remote_id'
+python3 /home/toybook/ndefender-backend-aggregator/tools/ws_public_test.py --url wss://n.flyspark.in/api/v1/ws --seconds 10
+```
+
+**Runbook**:
+- See `/home/toybook/ndefender-backend-aggregator/docs/OPERATIONS.md`:
+  - RF offline reasons (`antsdr_unreachable`, `rf_jsonl_missing`, `no_recent_rf_events`).
+  - RemoteID capture semantics (`capture_active` vs `no_odid_frames`).
+  - Restart storm controls and recovery steps.
+
+---
+
 ## NdefenderSubsystemDown
 **What it means**: A subsystem is not reporting (`ndefender_subsystem_up == 0`).
 
@@ -315,4 +337,3 @@ curl -sS http://127.0.0.1:9109/metrics | rg 'poll_latency_seconds'
 
 **When to escalate**:
 - Persistent high latency with no load issues.
-
